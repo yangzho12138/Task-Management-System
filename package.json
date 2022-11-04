@@ -21,7 +21,9 @@
   },
   "dependencies": {
     "body-parser": "^1.17.2",
+    "dotenv": "^16.0.3",
     "express": "^4.15.3",
+    "express-async-handler": "^1.2.0",
     "mongoose": "^5.4.18",
     "nodemon": "^1.11.0"
   }

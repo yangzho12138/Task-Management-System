@@ -3,10 +3,18 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     secrets = require('./config/secrets'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    dotenv = require('dotenv'),
+    dbConfig = require('./config/db');
+
+dotenv.config()
+// connect to the database
+dbConfig.connectDB()
 
 // Create our Express application
 var app = express();
+
+app.use(express.json())
 
 // Use environment defined port or 4000
 var port = process.env.PORT || 4000;
