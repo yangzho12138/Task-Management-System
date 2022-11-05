@@ -25,7 +25,19 @@ exports.getUsers = asyncHandler (async(req, res) => {
 })
 
 exports.createUser = asyncHandler (async(req, res) => {
-    const { name, email, pendingTasks } = req.body[0];
+    const { name, email, pendingTasks } = req.body;
+
+    if(!name || !email){
+        res.status(500);
+        throw new Error("Invalid Name Or Email");
+    }
+
+    // check the email unique
+    const existUser = await User.findOne({'email': email});
+    if(existUser){
+        res.status(500);
+        throw new Error("Email Exists");
+    }
 
     const user = await User.insertMany([
         {
@@ -39,7 +51,7 @@ exports.createUser = asyncHandler (async(req, res) => {
         res.status(201);
         res.json({
             'message': 'OK',
-            'data': user
+            'data': user[0]
         })
     }else{
         res.status(500)
@@ -56,7 +68,7 @@ exports.getUser = asyncHandler (async(req, res) => {
         res.status(200);
         res.json({
             'message': 'OK',
-            'data': user
+            'data': user[0]
         })
     }else{
         res.status(404);
@@ -65,7 +77,20 @@ exports.getUser = asyncHandler (async(req, res) => {
 })
 
 exports.replaceUser = asyncHandler (async(req, res) => {
-    const { name, email, pendingTasks } = req.body[0];
+    const { name, email, pendingTasks } = req.body;
+
+    if(!name || !email){
+        res.status(500);
+        throw new Error("Invalid Name Or Email");
+    }
+
+    // check the email unique
+    const existUser = await User.findById({'email': email});
+    if(existUser){
+        res.status(500);
+        throw new Error("Email Exists");
+    }
+
     const user = await User.replaceOne({"_id":req.params.id}, {
         "name": name,
         "email": email,
@@ -77,7 +102,7 @@ exports.replaceUser = asyncHandler (async(req, res) => {
         res.status(200);
         res.json({
             'message': 'OK',
-            'data': user
+            'data': user[0]
         })
     }else{
         res.status(500);
@@ -86,7 +111,18 @@ exports.replaceUser = asyncHandler (async(req, res) => {
 })
 
 exports.deleteUser = asyncHandler (async(req, res) => {
+    const deleteUser = await User.findById(req.params.id);
+    const deletePendingTasks = deleteUser.pendingTasks;
+
     const user = await User.deleteOne({"_id":req.params.id});
+
+    // delete the corresponding tasks of the user
+    for(let i = 0; i < deletePendingTasks.length; i++){
+        let taskId = deletePendingTasks[i];
+        await Task.deleteOne({"_id": taskId});
+    }
+
+
     if(user.ok !== 0){
         res.status(200);
         res.json({
