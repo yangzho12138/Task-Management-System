@@ -4,12 +4,25 @@ var express = require('express'),
     mongoose = require('mongoose'),
     secrets = require('./config/secrets'),
     bodyParser = require('body-parser'),
-    dotenv = require('dotenv'),
-    dbConfig = require('./config/db');
+    dotenv = require('dotenv');
 
 dotenv.config()
 // connect to the database
-dbConfig.connectDB()
+connectDB = async () => {
+    try{
+        const conn = await mongoose.connect(secrets.mongo_connection,{
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        })
+
+        console.log(`MongoDB Connected: ${conn.connection.host}`)
+    }catch (error){
+        console.error(`Error: ${error.message}`)
+        process.exit(1)
+    }
+}
+
+connectDB()
 
 // Create our Express application
 var app = express();
