@@ -116,10 +116,10 @@ exports.deleteUser = asyncHandler (async(req, res) => {
 
     const user = await User.deleteOne({"_id":req.params.id});
 
-    // delete the corresponding tasks of the user
+    // update the corresponding tasks of the user
     for(let i = 0; i < deletePendingTasks.length; i++){
         let taskId = deletePendingTasks[i];
-        await Task.deleteOne({"_id": taskId});
+        await Task.updateOne({"_id": taskId}, {$set:{"assignedUser": "", "assignedUserName": "unassigned"}});
     }
 
 

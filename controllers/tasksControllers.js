@@ -98,7 +98,7 @@ exports.getTask = asyncHandler (async(req, res) => {
 
 exports.replaceTask = asyncHandler (async(req, res) => {
     const { name, description, deadline, completed, assignedUser, assignedUserName } = req.body;
-
+    
     if(!name || !deadline){
         res.status(500);
         throw new Error("Invalid Name Or Deadline");
