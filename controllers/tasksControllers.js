@@ -88,7 +88,7 @@ exports.getTask = asyncHandler (async(req, res) => {
         res.status(200);
         res.json({
             'message': 'OK',
-            'data': task[0]
+            'data': task
         })
     }else{
         res.status(404);
@@ -164,7 +164,7 @@ exports.replaceTask = asyncHandler (async(req, res) => {
     res.status(200);
     res.json({
         'message': 'OK',
-        'data': task[0]
+        'data': task
     })
 })
 

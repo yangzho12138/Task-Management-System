@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const User = require('../models/user')
+const Task = require('../models/task')
 const url = require('url')
 const querystring = require('querystring')
 
@@ -68,7 +69,7 @@ exports.getUser = asyncHandler (async(req, res) => {
         res.status(200);
         res.json({
             'message': 'OK',
-            'data': user[0]
+            'data': user
         })
     }else{
         res.status(404);
@@ -85,16 +86,50 @@ exports.replaceUser = asyncHandler (async(req, res) => {
     }
 
     // check the email unique
-    const existUser = await User.findById({'email': email});
+    const existUser = await User.findOne({'email': email});
     if(existUser){
         res.status(500);
         throw new Error("Email Exists");
     }
 
+    const oldUser = await User.findById(req.params.id)
+    if(!oldUser){
+        res.status(404)
+        throw new Error("Not Found User To Be Replaced")
+    }
+
+    // update the tasks of the old user
+    for(let i = 0; i < oldUser.pendingTasks.length; i++){
+        let oldPendingTaskId = oldUser.pendingTasks[i]
+        await Task.updateOne({"_id": oldPendingTaskId}, {$set:{"assignedUser": "", "assignedUserName": "unassigned"}})
+    }
+
+    // create the pendingTasks info of the new user
+    let pendingTasksId = []
+    for(let i = 0; i < pendingTasks.length; i++){
+        let pendingTask = pendingTasks[i]
+        const newTask = await Task.insertMany([
+            {
+                "name": pendingTask.name,
+                "description": pendingTask.description,
+                "deadline": pendingTask.deadline,
+                "completed": pendingTask.completed,
+                "assignedUser": req.params.id,
+                "assignedUserName": name,
+                "dateCreated": Date.now()
+            }
+        ])
+
+        if(newTask)
+            pendingTasksId.push(newTask[0]._id)
+    }
+
+    console.log(pendingTasksId)
+
     const user = await User.replaceOne({"_id":req.params.id}, {
         "name": name,
         "email": email,
-        "pendingTasks": pendingTasks,
+        "pendingTasks": pendingTasksId,
         "dateCreated": Date.now()
     })
 
@@ -102,7 +137,7 @@ exports.replaceUser = asyncHandler (async(req, res) => {
         res.status(200);
         res.json({
             'message': 'OK',
-            'data': user[0]
+            'data': user
         })
     }else{
         res.status(500);
