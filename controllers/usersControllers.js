@@ -106,25 +106,25 @@ exports.replaceUser = asyncHandler (async(req, res) => {
 
     // create the pendingTasks info of the new user
     let pendingTasksId = []
-    for(let i = 0; i < pendingTasks.length; i++){
-        let pendingTask = pendingTasks[i]
-        const newTask = await Task.insertMany([
-            {
-                "name": pendingTask.name,
-                "description": pendingTask.description,
-                "deadline": pendingTask.deadline,
-                "completed": pendingTask.completed,
-                "assignedUser": req.params.id,
-                "assignedUserName": name,
-                "dateCreated": Date.now()
-            }
-        ])
-
-        if(newTask)
-            pendingTasksId.push(newTask[0]._id)
+    if(pendingTasks){
+        for(let i = 0; i < pendingTasks.length; i++){
+            let pendingTask = pendingTasks[i]
+            const newTask = await Task.insertMany([
+                {
+                    "name": pendingTask.name,
+                    "description": pendingTask.description,
+                    "deadline": pendingTask.deadline,
+                    "completed": pendingTask.completed,
+                    "assignedUser": req.params.id,
+                    "assignedUserName": name,
+                    "dateCreated": Date.now()
+                }
+            ])
+    
+            if(newTask)
+                pendingTasksId.push(newTask[0]._id)
+        }
     }
-
-    console.log(pendingTasksId)
 
     const user = await User.replaceOne({"_id":req.params.id}, {
         "name": name,

@@ -133,16 +133,18 @@ exports.replaceTask = asyncHandler (async(req, res) => {
     if(assignedUserName !== 'unassigned')
         updateTaskUser = await User.findById(assignedUser);
 
-    // update task info
-    const task = await Task.replaceOne({"_id":req.params.id}, {
-        "name": name,
-        "description": description,
-        "deadline": deadline,
-        "completed": completed,
-        "assignedUser": assignedUser,
-        "assignedUserName": assignedUserName ? assignedUserName:updateTaskUser.name,
-        "dateCreated": Date.now()
-    })
+    if(updateTaskUser){
+        // update task info
+        const task = await Task.replaceOne({"_id":req.params.id}, {
+            "name": name,
+            "description": description,
+            "deadline": deadline,
+            "completed": completed,
+            "assignedUser": assignedUser,
+            "assignedUserName": assignedUserName ? assignedUserName:updateTaskUser.name,
+            "dateCreated": Date.now()
+        })
+    }
 
     if(task.nModified === 0){
         res.status(500);
